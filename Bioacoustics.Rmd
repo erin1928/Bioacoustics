@@ -1,0 +1,53 @@
+---
+title: "Bioacoustics"
+author: "Erin Anderson"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+url <- "https://cran.r-project.org/src/contrib/Archive/ohun/ohun_1.0.0.tar.gz"
+install.packages(url, type="source", repos=NULL)
+# pulling all Strepera versicolor calls without downloading locally
+df1 = query_xc(qword ='Strepera versicolor type:call cnt:"Australia"', download = FALSE)
+
+# Filter by type   
+df1 = df1[df1$Vocalization_type=="call",] #filtering by only calls
+df1 = df1[df1$Quality=="A",] #a type quality
+df1 = df1[1:9,]#takes the first 9 mp3 files 
+
+# Download data to working directory
+query_xc(X = df1, download = TRUE, path = getwd())
+```
+
+```{r 1, include=TRUE}
+# getwd() gets our current working directory and file.path() combines getwd() and "mgr.wav" into a file path format. 
+wav <- read_audio(file.path(getwd(), "mgr.wav"))
+
+# Say you have a file saved on your Desktop, your code might look a little like this:
+# wav <- read_audio(file.path("~/Desktop", "mgr.wav"))
+```
+
+```{r 2, include=TRUE}
+# Read just one file!
+STREPV <- read_audio(file.path(getwd(), "Strepera-versicolor-571957.mp3"))
+STREPV
+```
+
+
+```{r 3, include=TRUE}
+# Read all the files in your current directory!
+read_all_mp3 <- function(){
+  # List all mp3 files in current directory
+  mp3_files = list.files(path=".", pattern=".mp3", all.files=TRUE, full.names=TRUE)
+  audio_list <- list()
+  # Append all the files a paths to a single list named audio_list
+  for(files in mp3_files) {
+    curr_file_path <- read_audio(file.path(files))
+    audio_list <- append(audio_list, curr_file_path)
+  }
+  return(audio_list)
+}
+
+read_all_mp3()
+```
